@@ -6,7 +6,7 @@ const { order } = require('../models');
 // Define routes
 router.get('/', orderController.getAllOrders);
 router.get('/:id', orderController.getOrderById);
-router.post('/:userId', orderController.createOrder);
+router.post('/', orderController.createOrder);
 router.put('/:id', orderController.updateOrder);
 router.delete('/:id', orderController.deleteOrder);
 //router.put('/:orderId/status', orderController.updateOrderStatus);

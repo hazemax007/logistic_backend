@@ -40,13 +40,7 @@ exports.getOrderById = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
   try {
-    const { userId } = req.params;
     const { ref, deliveryLocation, deliveryDate, customerInfo, products } = req.body;
-
-    const user = await db.user.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
 
     let customer;
     if (customerInfo && customerInfo.email) {
@@ -58,7 +52,6 @@ exports.createOrder = async (req, res) => {
     }
 
     const order = await db.order.create({
-      userId,
       customerId: customer.id,
       ref,
       value: 0,

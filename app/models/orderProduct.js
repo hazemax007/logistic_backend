@@ -10,7 +10,7 @@ module.exports = (sequelize, Sequelize) => {
         }
     });
 
-
     return OrderProduct;
 };
+
 

@@ -7,6 +7,7 @@ const supplierRoutes = require('./app/routes/supplier.routes')
 const orderRoutes = require('./app/routes/order.routes')
 const communicationRoutes = require('./app/routes/communication.routes')
 const dashboardRoutes = require('./app/routes/dash.routes')
+const dashboarddRoutes = require('./app/routes/dashboard.routes')
 const path = require('path')
 
 
@@ -63,6 +64,7 @@ app.use('/api/suppliers', supplierRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/communications', communicationRoutes);
 app.use('/api/dash', dashboardRoutes);
+app.use('/api/dashboard', dashboarddRoutes);
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
