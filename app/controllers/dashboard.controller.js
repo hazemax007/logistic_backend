@@ -39,6 +39,19 @@ exports.orderStatusDistribution = async (req, res) => {
       res.status(500).json({ error: 'An error occurred' });
     }
   }
+
+  exports.getOrdersByStatus = async (req, res) => {
+    const { status } = req.params;
+    try {
+      const orders = await db.order.findAll({
+        where: { status },
+        attributes: ['ref', 'value', 'deliveryLocation', 'deliveryDate'], // Add more attributes as needed
+      });
+      res.json(orders);
+    } catch (err) {
+      res.status(500).json({ error: 'An error occurred' });
+    }
+  };
   
   // Sales Over Time
   exports.salesOverTime = async (req, res) => {
@@ -143,23 +156,36 @@ exports.getProductStockLevels = async (req, res) => {
   }
 };
 
-exports.getProductCategories = async (req,res) => {
-  try {
-    const categories = await db.product.findAll({
-        attributes: [
-            'category',
-            [sequelize.fn('COUNT', sequelize.col('id')), 'productCount']
-        ],
-        group: ['category'],
-        raw: true
-    });
+  exports.getProductCategories = async (req,res) => {
+    try {
+      const categories = await db.product.findAll({
+          attributes: [
+              'category',
+              [sequelize.fn('COUNT', sequelize.col('id')), 'productCount']
+          ],
+          group: ['category'],
+          raw: true
+      });
 
-    res.json(categories);
-} catch (error) {
-    console.error('Error fetching product categories:', error);
-    res.status(500).json({ message: 'Internal server error' });
-}
-}
+      res.json(categories);
+  } catch (error) {
+      console.error('Error fetching product categories:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+  }
+
+  exports.getProductsByCategory = async (req, res) => {
+    const { category } = req.params;
+    try {
+      const products = await db.product.findAll({
+        where: { category },
+        attributes: ['ref', 'name', 'buyPrice', 'quantity', 'minStockLevel', 'expiryDate'], // Add more attributes as needed
+      });
+      res.json(products);
+    } catch (err) {
+      res.status(500).json({ error: 'An error occurred' });
+    }
+  };
 
 exports.getUpcomingExpiryProducts = async (req,res) => {
   try {
@@ -286,16 +312,15 @@ exports.getCustomerDemographics = async (req, res) => {
   try {
       const demographics = await db.customer.findAll({
           attributes: [
-              [db.Sequelize.fn('count', db.Sequelize.col('id')), 'customerCount'],
-              'address', 'billingAddress'
+              [db.Sequelize.fn('count', db.Sequelize.col('address')), 'count'],
+              'address',
           ],
-          group: ['address', 'billingAddress']
+          group: ['address']
       });
 
       const response = demographics.map(item => ({
         address: item.address,
-        billingAddress: item.billingAddress,
-          customerCount: item.dataValues.customerCount
+          count: item.dataValues.count
       }));
 
       res.status(200).json(response);
@@ -379,11 +404,20 @@ exports.getDashboardStats = async (req, res) => {
       }
     });
 
+    const totalProducts = await db.product.count({
+      where: {
+        createdAt: {
+          [Op.between]: [start, end]
+        },
+      }
+    });
+
     const totalQuantityInHand = await db.product.sum('quantity');
 
     res.json({
       totalOrders,
       totalRevenue,
+      totalProducts,
       totalQuantityInHand
     });
   } catch (err) {

@@ -51,4 +51,6 @@ module.exports = function(app) {
   app.post('/api/test/users/block/:id', controller.blockUser);
 
   app.post('/api/test/users/unblock/:id',controller.unblockUser);
+
+  app.put('/api/test/users/updateRole/:userId', controller.updateUserRoles)
 };

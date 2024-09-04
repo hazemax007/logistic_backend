@@ -257,6 +257,31 @@ exports.toggleUserStatus = async (req, res) => {
   }
 };
 
+exports.updateUserRoles = async (req, res) => {
+  const userId = req.params.userId;
+  const { roles } = req.body;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    // Find all roles that match the provided role names
+    const rolesToAssign = await Role.findAll({
+      where: {
+        name: roles
+      }
+    });
+
+    // Update user roles
+    await user.setRoles(rolesToAssign);
+
+    res.send({ message: "User roles updated successfully" });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
 
 exports.allAccess = (req, res) => {
     res.status(200).send("Public Content.");

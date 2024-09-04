@@ -9,6 +9,8 @@ const nodemailer = require('nodemailer');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid'); // To generate unique ref
+const path = require('path');
+const { PassThrough } = require('stream');
 
 
 
@@ -40,7 +42,7 @@ exports.getOrderById = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
   try {
-    const { ref, deliveryLocation, deliveryDate, customerInfo, products } = req.body;
+    const { ref, deliveryLocation, deliveryDate, customerInfo, products, storeInfo } = req.body;
 
     let customer;
     if (customerInfo && customerInfo.email) {
@@ -51,8 +53,14 @@ exports.createOrder = async (req, res) => {
       customer = await db.customer.create(customerInfo);
     }
 
+    let store;
+    if (storeInfo && storeInfo.name) {
+      store = await db.store.findOne({ where: { name: storeInfo.name } });
+    }
+
     const order = await db.order.create({
       customerId: customer.id,
+      storeId: store.id,
       ref,
       value: 0,
       deliveryLocation,
@@ -221,6 +229,7 @@ exports.generateInvoice = async (req, res) => {
   const { orderId } = req.params;
 
   try {
+    // Fetch order details from the database
     const order = await db.order.findByPk(orderId, {
       include: [
         { model: db.customer },
@@ -237,13 +246,15 @@ exports.generateInvoice = async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    console.log(JSON.stringify(order, null, 2)); // Log the order details
-
-    const timestamp = new Date().getTime(); // Get current timestamp
-    const filePath = `invoices/invoice_${order.ref}_${timestamp}.pdf`; // Append timestamp to filename
-
+    // Create a PDF document
     const doc = new PDFDocument({ margin: 50 });
-    doc.pipe(fs.createWriteStream(filePath));
+
+    // Set response headers to force download of the PDF file
+    res.setHeader('Content-Disposition', `attachment; filename=invoice_${order.ref}.pdf`);
+    res.setHeader('Content-Type', 'application/pdf');
+
+    // Pipe the PDF document to the response
+    doc.pipe(res);
 
     // Header
     doc.font('Helvetica-Bold').fontSize(25).fillColor('#444444').text('INVOICE', { align: 'center' }).moveDown();
@@ -275,7 +286,7 @@ exports.generateInvoice = async (req, res) => {
     // Table Rows
     let totalValue = 0;
     order.products.forEach(product => {
-      const orderProduct = product.order_products; // Make sure this is the correct field
+      const orderProduct = product.order_products; // Ensure this is the correct field
       if (!orderProduct) {
         console.error(`Missing order_products data for product ${product.id}`);
         return;
@@ -298,14 +309,12 @@ exports.generateInvoice = async (req, res) => {
     // Footer
     doc.fontSize(10).fillColor('#444444').text('Thank you for your business!', { align: 'center' });
 
-    // Close the document
+    // Finalize the PDF and end the response
     doc.end();
 
-    // Send success response with file path
-    return res.status(200).json({ message: 'Invoice generated successfully', filePath });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 

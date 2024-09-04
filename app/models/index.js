@@ -67,11 +67,16 @@ db.order.belongsTo(db.customer);
 db.store.hasMany(db.order);
 db.order.belongsTo(db.store);
 
+db.product.belongsToMany(db.supplier, { through: "supplier_products" });
+db.supplier.belongsToMany(db.product, { through: "supplier_products" });
+
 db.product.belongsToMany(db.store, { through: "store_products" });
 db.store.belongsToMany(db.product, { through: "store_products" });
 
 db.purchase.belongsTo(db.order);
 db.label.belongsTo(db.order);
+
+
 
 db.ROLES = ["admin", "manager", "paymaster"];
 

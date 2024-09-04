@@ -11,6 +11,8 @@ router.get('/NumbDeliveredOrders', statsController.numbDeliveredOrders)
 
 router.get('/orderStatusDistribution', statsController.orderStatusDistribution)
 
+router.get('/getOrdersByStatus/:status', statsController.getOrdersByStatus)             
+
 router.get('/salesOverTime', statsController.salesOverTime)
 
 router.get('/topProductsBySales', statsController.getTopProductsBySales)
@@ -20,6 +22,8 @@ router.get('/topProductsByQuantity', statsController.getTopProductsByQuantity)
 router.get('/getProductStockLevels', statsController.getProductStockLevels)
 
 router.get('/getProductCategories', statsController.getProductCategories)
+
+router.get('/getProductsByCategory/:category', statsController.getProductsByCategory)
 
 router.get('/getUpcomingExpiryProducts', statsController.getUpcomingExpiryProducts)
 
