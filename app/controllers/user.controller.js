@@ -89,15 +89,12 @@ exports.updateUser = async (req, res) => {
     });
 
     if (user) {
-      // Hash password if provided in request body
       if (req.body.password) {
         req.body.password = bcrypt.hashSync(req.body.password, 8);
       }
 
-      // Update user details
       await user.update(req.body);
 
-      // Update roles if provided in request body
       if (req.body.roles) {
         const roles = await Role.findAll({
           where: {
@@ -108,7 +105,12 @@ exports.updateUser = async (req, res) => {
         await user.setRoles(roles);
       }
 
-      res.json(user);
+      // Include roles in the response after update
+      const updatedUser = await User.findByPk(req.params.id, {
+        include: Role,
+      });
+
+      res.json(updatedUser);
     } else {
       res.status(404).json({ message: 'User not found' });
     }
@@ -116,6 +118,7 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.deleteUser = async (req, res) => {
   try {

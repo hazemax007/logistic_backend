@@ -33,6 +33,7 @@ db.supplier = require("../models/supplier.model.js")(sequelize, Sequelize);
 db.orderProduct = require("../models/orderProduct.js")(sequelize, Sequelize);
 db.purchase = require("../models/purchase.model.js")(sequelize, Sequelize);
 db.label = require("../models/label.model.js")(sequelize, Sequelize);
+db.storeProducts = require("../models/storeProducts.model.js")(sequelize, Sequelize);
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
@@ -70,15 +71,43 @@ db.order.belongsTo(db.store);
 db.product.belongsToMany(db.supplier, { through: "supplier_products" });
 db.supplier.belongsToMany(db.product, { through: "supplier_products" });
 
-db.product.belongsToMany(db.store, { through: "store_products" });
-db.store.belongsToMany(db.product, { through: "store_products" });
+db.product.belongsToMany(db.store, { 
+    through: { 
+        model: sequelize.define('store_products', { 
+            quantity: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0 // or handle according to your use case
+            }
+        }),
+        unique: false
+    },
+    foreignKey: 'productId',
+    otherKey: 'storeId'
+});
+
+db.store.belongsToMany(db.product, { 
+    through: { 
+        model: sequelize.define('store_products', { 
+            quantity: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0
+            }
+        }),
+        unique: false
+    },
+    foreignKey: 'storeId',
+    otherKey: 'productId'
+});
+
 
 db.purchase.belongsTo(db.order);
 db.label.belongsTo(db.order);
 
 
 
-db.ROLES = ["admin", "manager", "paymaster"];
+db.ROLES = ["admin", "manager", "user"];
 
 module.exports = db;
 

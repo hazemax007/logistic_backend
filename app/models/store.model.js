@@ -1,3 +1,4 @@
+const db = require("../models");
 module.exports = (sequelize, Sequelize) => {
     const Store = sequelize.define("stores", {
       ref: {

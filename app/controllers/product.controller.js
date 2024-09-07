@@ -1,5 +1,7 @@
 const db = require('../models');
 const Product = db.product;
+const { QueryTypes } = require('sequelize');
+const { sequelize } = require('../models');
 
 
 exports.createProduct = async (req, res) => {
@@ -144,5 +146,29 @@ exports.deleteProduct = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+  exports.updateStoreProductQuantity = async (req, res) => {
+  const { storeId, productId, quantity } = req.body;
+
+  if (!storeId || !productId || quantity === undefined) {
+    return res.status(400).json({ message: 'storeId, productId, and quantity are required.' });
+  }
+
+  try {
+    // Raw SQL query to update the quantity
+    await sequelize.query(
+      'UPDATE store_products SET quantity = :quantity WHERE storeId = :storeId AND productId = :productId',
+      {
+        replacements: { quantity, storeId, productId },
+        type: QueryTypes.UPDATE,
+      }
+    );
+
+    res.status(200).json({ message: 'Quantity updated successfully.' });
+  } catch (error) {
+    console.error('Error updating store product quantity:', error);
+    res.status(500).json({ message: 'Internal server error.' });
   }
 };
