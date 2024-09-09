@@ -89,9 +89,6 @@ exports.updateUser = async (req, res) => {
     });
 
     if (user) {
-      if (req.body.password) {
-        req.body.password = bcrypt.hashSync(req.body.password, 8);
-      }
 
       await user.update(req.body);
 
