@@ -149,7 +149,7 @@ function sendLowStockAlert(productName, userEmail) {
   });
 
   const mailOptions = {
-    from: 'hazembensalem77@gmail.com',
+    from: 'barkatikhalil60@gmail.com',
     to: userEmail,
     subject: 'Low Stock Alert',
     text: `The stock for ${productName} is running low. Please replenish.`,
